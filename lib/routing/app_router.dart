@@ -11,6 +11,9 @@ import '../ui/customer/customer_shell.dart';
 import '../ui/customer/home_screen.dart';
 import '../ui/customer/package_detail_screen.dart';
 import '../ui/customer/profile_screen.dart';
+import '../ui/customer/bookings_screen.dart';
+import '../ui/customer/booking_form_screen.dart';
+import '../ui/customer/booking_detail_screen.dart';
 import '../ui/admin/admin_shell.dart';
 import '../ui/admin/manage_packages_screen.dart';
 import '../ui/admin/package_form_screen.dart';
@@ -129,7 +132,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: 'customer_home',
                 builder: (context, state) => const HomeScreen(),
                 routes: [
-                  // Sub-route: /customer/home/package/:id
                   GoRoute(
                     path: 'package/:id',
                     name: 'package_detail',
@@ -137,6 +139,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       final id = state.pathParameters['id']!;
                       return PackageDetailScreen(packageId: id);
                     },
+                    routes: [
+                      GoRoute(
+                        path: 'book',
+                        name: 'booking_form',
+                        builder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          return BookingFormScreen(packageId: id);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -147,10 +159,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppConstants.customerBookingsPath,
                 name: 'customer_bookings',
-                builder: (context, state) => const _PlaceholderScreen(
-                  title: 'My Bookings',
-                  icon: Icons.calendar_month,
-                ),
+                builder: (context, state) => const BookingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    name: 'booking_detail',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return BookingDetailScreen(bookingId: id);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

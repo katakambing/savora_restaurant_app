@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/menu_providers.dart';
@@ -120,12 +122,7 @@ class PackageDetailScreen extends ConsumerWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Sprint 3: Navigate to booking form
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Booking flow coming in Sprint 3!')),
-                            );
-                          },
+                          onPressed: () => context.push('/customer/home/package/$packageId/book'),
                           icon: const Icon(Icons.calendar_month),
                           label: const Text('Book Now'),
                           style: ElevatedButton.styleFrom(
