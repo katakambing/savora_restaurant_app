@@ -13,6 +13,7 @@ import '../ui/customer/package_detail_screen.dart';
 import '../ui/customer/profile_screen.dart';
 import '../ui/customer/bookings_screen.dart';
 import '../ui/customer/booking_form_screen.dart';
+import '../ui/customer/booking_confirmation_screen.dart';
 import '../ui/customer/booking_detail_screen.dart';
 import '../ui/admin/admin_shell.dart';
 import '../ui/admin/manage_packages_screen.dart';
@@ -147,6 +148,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                           final id = state.pathParameters['id']!;
                           return BookingFormScreen(packageId: id);
                         },
+                        routes: [
+                          GoRoute(
+                            path: 'confirm',
+                            name: 'booking_confirm',
+                            builder: (context, state) =>
+                                const BookingConfirmationScreen(),
+                          ),
+                        ],
                       ),
                     ],
                   ),

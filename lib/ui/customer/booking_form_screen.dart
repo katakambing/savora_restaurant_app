@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -7,10 +8,9 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/menu_package_model.dart';
 import '../../data/repositories/booking_repository.dart';
-import '../../providers/auth_providers.dart';
 import '../../providers/menu_providers.dart';
+import '../../providers/pending_booking_provider.dart';
 import '../common/widgets/app_button.dart';
-import '../common/widgets/error_dialog.dart';
 
 class BookingFormScreen extends ConsumerStatefulWidget {
   final String packageId;
@@ -25,7 +25,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   int _numGuests = 1;
   DateTime _eventDate = DateTime.now().add(const Duration(days: 1));
   final List<CustomFee> _customFees = [];
-  bool _isLoading = false;
 
   // Controllers for adding new custom fee
   final _feeNameController = TextEditingController();
@@ -55,42 +54,16 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     });
   }
 
-  Future<void> _submit(MenuPackageModel package) async {
-    if (_isLoading) return; // prevent double-tap race condition
-    final user = ref.read(authProvider).valueOrNull;
-    if (user == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final repo = ref.read(bookingRepositoryProvider);
-      final booking = BookingModel(
-        id: '',
-        userId: user.uid,
-        userName: user.name,
-        packageId: package.id,
-        packageName: package.name,
-        numGuests: _numGuests,
-        customFees: _customFees,
-        totalPrice: _calculateTotal(package),
-        status: AppConstants.statusUpcoming,
-        eventDate: _eventDate,
-        createdAt: DateTime.now(),
-      );
-
-      await repo.createBooking(booking);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking confirmed!')),
-        );
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) showErrorDialog(context, e);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  void _reviewAndConfirm(MenuPackageModel package) {
+    // Store pending booking data and navigate to confirmation screen
+    ref.read(pendingBookingProvider.notifier).state = PendingBookingData(
+      package: package,
+      numGuests: _numGuests,
+      eventDate: _eventDate,
+      customFees: List.from(_customFees),
+      totalPrice: _calculateTotal(package),
+    );
+    context.push('/customer/home/package/${package.id}/book/confirm');
   }
 
   @override
@@ -296,11 +269,10 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                 const SizedBox(height: 24),
 
                 // Confirm button
-                AppButton.primary(
-                  label: 'Confirm Booking',
-                  onPressed: _isLoading ? null : () => _submit(package),
-                  loading: _isLoading,
-                  icon: Icons.check_circle,
+                AppButton.secondary(
+                  label: 'Review & Confirm',
+                  onPressed: () => _reviewAndConfirm(package),
+                  icon: Icons.arrow_forward,
                 ),
                 const SizedBox(height: 24),
               ],
